@@ -1,0 +1,193 @@
+CipherStudio - Complete File Structure
+=====================================
+
+project1/
+│
+├── backend/                                 # Backend Server (Express.js)
+│   ├── config/
+│   │   ├── database.js                     # MongoDB connection setup
+│   │   └── s3.js                           # AWS S3 configuration & utilities
+│   │
+│   ├── controllers/
+│   │   ├── userController.js               # User registration, login, profile
+│   │   ├── projectController.js            # Project CRUD operations
+│   │   └── fileController.js               # File/folder operations
+│   │
+│   ├── models/
+│   │   ├── User.js                         # User schema (username, email, password)
+│   │   ├── Project.js                      # Project schema (name, userId, template)
+│   │   └── File.js                         # File schema (name, type, s3Key, parentId)
+│   │
+│   ├── routes/
+│   │   ├── userRoutes.js                   # /api/users/* routes
+│   │   ├── projectRoutes.js                # /api/projects/* routes
+│   │   └── fileRoutes.js                   # /api/files/* routes
+│   │
+│   ├── middleware/
+│   │   ├── auth.js                         # JWT authentication middleware
+│   │   └── errorHandler.js                 # Error handling middleware
+│   │
+│   ├── utils/
+│   │   └── projectTemplates.js             # Default React template files
+│   │
+│   ├── server.js                           # Main Express server entry point
+│   ├── package.json                        # Backend dependencies
+│   ├── .env.example                        # Environment variables template
+│   ├── .gitignore                          # Git ignore rules
+│   └── README.md                           # Backend documentation
+│
+├── frontend/                                # Frontend Application (Next.js)
+│   ├── components/
+│   │   ├── FileExplorer.js                 # File tree navigation component
+│   │   └── SandpackEditor.js               # Sandpack code editor wrapper
+│   │
+│   ├── lib/
+│   │   ├── api.js                          # Axios API client & endpoints
+│   │   └── auth.js                         # Auth utilities (token, user storage)
+│   │
+│   ├── pages/
+│   │   ├── _app.js                         # Next.js app wrapper
+│   │   ├── index.js                        # Landing page (homepage)
+│   │   ├── login.js                        # Login page
+│   │   ├── register.js                     # Registration page
+│   │   ├── dashboard.js                    # Projects dashboard
+│   │   └── editor/
+│   │       └── [id].js                     # IDE editor (dynamic route)
+│   │
+│   ├── styles/
+│   │   └── globals.css                     # Global styles & Tailwind imports
+│   │
+│   ├── package.json                        # Frontend dependencies
+│   ├── next.config.js                      # Next.js configuration
+│   ├── tailwind.config.js                  # Tailwind CSS configuration
+│   ├── postcss.config.js                   # PostCSS configuration
+│   ├── jsconfig.json                       # JavaScript path aliases
+│   ├── .env.local.example                  # Frontend environment template
+│   ├── .gitignore                          # Git ignore rules
+│   └── README.md                           # Frontend documentation
+│
+├── README.md                                # Main project documentation
+├── QUICK_START.md                           # 5-minute quick start guide
+├── SETUP_GUIDE.md                           # Detailed setup instructions
+├── ARCHITECTURE.md                          # System architecture & design
+├── DEPLOYMENT.md                            # Production deployment guide
+├── CONTRIBUTING.md                          # Contribution guidelines
+├── PROJECT_SUMMARY.md                       # Project overview & summary
+├── LICENSE                                  # MIT License
+├── package.json                             # Root package.json (scripts)
+├── .gitignore                              # Root git ignore
+└── FILE_STRUCTURE.txt                       # This file
+
+
+Key Files Explained
+===================
+
+Backend:
+--------
+server.js                   - Express server setup, middleware, routes
+config/database.js          - MongoDB connection using Mongoose
+config/s3.js               - AWS S3 upload/download/delete functions
+models/User.js             - User schema with password hashing
+models/Project.js          - Project schema with user reference
+models/File.js             - File/folder schema with parent-child relationship
+controllers/*              - Business logic for API endpoints
+routes/*                   - API route definitions
+middleware/auth.js         - JWT token verification
+utils/projectTemplates.js  - Default React project files
+
+Frontend:
+---------
+pages/index.js             - Landing page with features
+pages/login.js             - User login form
+pages/register.js          - User registration form
+pages/dashboard.js         - Project list and management
+pages/editor/[id].js       - Main IDE interface
+components/FileExplorer.js - File tree with create/delete
+components/SandpackEditor.js - Sandpack integration
+lib/api.js                 - API client with interceptors
+lib/auth.js                - Token and user management
+styles/globals.css         - Tailwind CSS imports
+
+Documentation:
+--------------
+README.md                  - Project overview, features, tech stack
+QUICK_START.md            - Fast setup in 5 minutes
+SETUP_GUIDE.md            - Detailed MongoDB & AWS setup
+ARCHITECTURE.md           - System design, data flow, schemas
+DEPLOYMENT.md             - Production deployment to Render/Vercel
+CONTRIBUTING.md           - How to contribute to the project
+PROJECT_SUMMARY.md        - Complete project summary
+
+
+Total Statistics
+================
+Backend Files:      20+
+Frontend Files:     15+
+Documentation:      7 files
+Total Lines:        5000+
+API Endpoints:      15+
+React Components:   10+
+Database Models:    3
+
+
+Environment Variables Required
+==============================
+
+Backend (.env):
+- PORT
+- NODE_ENV
+- MONGODB_URI
+- JWT_SECRET
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_REGION
+- AWS_S3_BUCKET_NAME
+- CORS_ORIGIN
+
+Frontend (.env.local):
+- NEXT_PUBLIC_API_URL
+
+
+Tech Stack Summary
+==================
+Frontend:  Next.js, React, Sandpack, Tailwind CSS, Axios
+Backend:   Express.js, Node.js, MongoDB, Mongoose, JWT
+Storage:   MongoDB Atlas, AWS S3
+Deploy:    Vercel (frontend), Render/Railway (backend)
+
+
+Main Features
+=============
+✓ User authentication (register/login)
+✓ Project management (create/edit/delete)
+✓ File system (folders & files)
+✓ Code editor with live preview
+✓ Cloud storage (MongoDB + S3)
+✓ Responsive design
+✓ Dark mode IDE
+✓ Auto-save functionality
+
+
+Getting Started
+===============
+1. Install dependencies:
+   cd backend && npm install
+   cd ../frontend && npm install
+
+2. Set up MongoDB Atlas & AWS S3
+
+3. Create .env files (see .env.example)
+
+4. Start servers:
+   Terminal 1: cd backend && npm run dev
+   Terminal 2: cd frontend && npm run dev
+
+5. Open http://localhost:3000
+
+
+Need Help?
+==========
+- Read QUICK_START.md for fast setup
+- Check SETUP_GUIDE.md for detailed instructions
+- Review ARCHITECTURE.md for system design
+- See DEPLOYMENT.md for production deployment
