@@ -1,36 +1,45 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-    open: true
-  },
-  // Use relative base URL for Vercel
-  base: './',
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: true,
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          vendor: ['axios', '@codesandbox/sandpack-react']
-        },
-        assetFileNames: 'assets/[name].[hash][extname]',
-        chunkFileNames: 'assets/[name].[hash].js',
-        entryFileNames: 'assets/[name].[hash].js'
+export default ({ mode }) => {
+  // Load environment variables
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return defineConfig({
+    plugins: [react()],
+    server: {
+      port: 3000,
+      open: true,
+      strictPort: true,
+    },
+    // Use absolute base URL for production
+    base: mode === 'production' ? '/' : '/',
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: true,
+      emptyOutDir: true,
+      chunkSizeWarningLimit: 1000, // in kbs
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            vendor: ['axios', '@codesandbox/sandpack-react']
+          },
+          entryFileNames: 'assets/[name].[hash].js',
+          chunkFileNames: 'assets/[name].[hash].js',
+          assetFileNames: 'assets/[name].[hash][extname]',
+        }
       }
-    }
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.json']
-  },
-  define: {
-    'process.env': {}
-  }
-})
+    },
+    resolve: {
+      extensions: ['.js', '.jsx', '.json']
+    },
+    define: {
+      'process.env': {}
+    },
+    // Environment variables
+    envPrefix: 'VITE_',
+    publicDir: 'public',
+  });
+};
