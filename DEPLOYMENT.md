@@ -1,534 +1,316 @@
-# Deployment Guide
+# CipherStudio - Vercel Deployment Guide
 
-This guide covers deploying CipherStudio to production environments.
+This guide will walk you through deploying your full-stack application on Vercel.
 
-## Table of Contents
-- [Backend Deployment](#backend-deployment)
-- [Frontend Deployment](#frontend-deployment)
-- [Environment Configuration](#environment-configuration)
-- [Post-Deployment](#post-deployment)
+## Prerequisites
 
----
-
-## Backend Deployment
-
-### Option 1: Render
-
-#### Step 1: Prepare Repository
-1. Push your code to GitHub
-2. Ensure `.gitignore` excludes `node_modules` and `.env`
-
-#### Step 2: Create Render Account
-1. Go to [Render.com](https://render.com)
-2. Sign up with GitHub
-
-#### Step 3: Create Web Service
-1. Click **New +** → **Web Service**
-2. Connect your GitHub repository
-3. Configure:
-   - **Name**: `cipherstudio-backend`
-   - **Region**: Choose closest to your users
-   - **Branch**: `main`
-   - **Root Directory**: `backend`
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-   - **Instance Type**: Free (or paid for production)
-
-#### Step 4: Set Environment Variables
-Add these in Render dashboard:
-```
-NODE_ENV=production
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=cipherstudio-files
-CORS_ORIGIN=https://your-frontend-url.vercel.app
-```
-
-#### Step 5: Deploy
-1. Click **Create Web Service**
-2. Wait for deployment to complete
-3. Note your backend URL: `https://cipherstudio-backend.onrender.com`
+- GitHub account
+- Vercel account (sign up at https://vercel.com)
+- MongoDB Atlas account (already set up)
 
 ---
 
-### Option 2: Railway
+## Part 1: Deploy Backend to Vercel
 
-#### Step 1: Install Railway CLI
-```bash
-npm install -g @railway/cli
-```
+### Step 1: Push Backend to GitHub
 
-#### Step 2: Login and Initialize
+1. **Create a new GitHub repository** for the backend:
+   - Go to https://github.com/new
+   - Name it: `cipherstudio-backend`
+   - Make it Public or Private
+   - Don't initialize with README
+
+2. **Push backend code to GitHub:**
+
 ```bash
-railway login
 cd backend
-railway init
+git init
+git add .
+git commit -m "Initial backend commit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/cipherstudio-backend.git
+git push -u origin main
 ```
 
-#### Step 3: Add Environment Variables
-```bash
-railway variables set NODE_ENV=production
-railway variables set MONGODB_URI=your_mongodb_uri
-railway variables set JWT_SECRET=your_jwt_secret
-railway variables set AWS_ACCESS_KEY_ID=your_aws_key
-railway variables set AWS_SECRET_ACCESS_KEY=your_aws_secret
-railway variables set AWS_REGION=us-east-1
-railway variables set AWS_S3_BUCKET_NAME=cipherstudio-files
-railway variables set CORS_ORIGIN=https://your-frontend.vercel.app
-```
+### Step 2: Deploy Backend on Vercel
 
-#### Step 4: Deploy
-```bash
-railway up
-```
+1. **Go to Vercel Dashboard:**
+   - Visit https://vercel.com/dashboard
+   - Click "Add New" → "Project"
 
-#### Step 5: Get URL
-```bash
-railway domain
-```
+2. **Import GitHub Repository:**
+   - Select `cipherstudio-backend`
+   - Click "Import"
+
+3. **Configure Project:**
+   - **Framework Preset:** Other
+   - **Root Directory:** `./` (leave as is)
+   - **Build Command:** Leave empty
+   - **Output Directory:** Leave empty
+
+4. **Add Environment Variables:**
+   Click "Environment Variables" and add these:
+
+   ```
+   MONGODB_URI=mongodb+srv://nikhilverma0427_db_user:cIiWM4tW6Qm5yV9p@cluster0.4roa1st.mongodb.net/cipherstudio?retryWrites=true&w=majority&appName=Cluster0
+   
+   JWT_SECRET=your_super_secret_jwt_key_change_this_in_production_make_it_very_long_and_random
+   
+   NODE_ENV=production
+   
+   CORS_ORIGIN=https://your-frontend-app.vercel.app
+   ```
+
+   **Note:** You'll update `CORS_ORIGIN` after deploying the frontend.
+
+5. **Deploy:**
+   - Click "Deploy"
+   - Wait for deployment to complete (2-3 minutes)
+   - Copy your backend URL: `https://cipherstudio-backend.vercel.app`
+
+### Step 3: Update MongoDB Atlas
+
+1. Go to MongoDB Atlas → Network Access
+2. Add IP Address: `0.0.0.0/0` (Allow from anywhere)
+3. This allows Vercel's servers to connect
 
 ---
 
-### Option 3: Cyclic
+## Part 2: Deploy Frontend to Vercel
 
-#### Step 1: Create Account
-1. Go to [Cyclic.sh](https://cyclic.sh)
-2. Sign in with GitHub
+### Step 1: Update Frontend Environment Variables
 
-#### Step 2: Deploy
-1. Click **Deploy**
-2. Select your repository
-3. Choose `backend` folder
-4. Add environment variables
-5. Click **Deploy**
+1. **Update the `.env` file in `frontend-new` folder:**
+
+```bash
+cd ../frontend-new
+```
+
+Create/Update `.env`:
+```
+VITE_API_URL=https://cipherstudio-backend.vercel.app/api
+```
+
+2. **Update the API configuration:**
+
+The `src/lib/api.js` already uses `import.meta.env.VITE_API_URL`, so it will automatically use the production URL.
+
+### Step 2: Push Frontend to GitHub
+
+1. **Create a new GitHub repository** for the frontend:
+   - Go to https://github.com/new
+   - Name it: `cipherstudio-frontend`
+   - Make it Public or Private
+
+2. **Push frontend code to GitHub:**
+
+```bash
+cd frontend-new
+git init
+git add .
+git commit -m "Initial frontend commit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/cipherstudio-frontend.git
+git push -u origin main
+```
+
+### Step 3: Deploy Frontend on Vercel
+
+1. **Go to Vercel Dashboard:**
+   - Click "Add New" → "Project"
+
+2. **Import GitHub Repository:**
+   - Select `cipherstudio-frontend`
+   - Click "Import"
+
+3. **Configure Project:**
+   - **Framework Preset:** Vite
+   - **Root Directory:** `./` (leave as is)
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+
+4. **Add Environment Variables:**
+
+   ```
+   VITE_API_URL=https://cipherstudio-backend.vercel.app/api
+   ```
+
+   Replace with your actual backend URL from Step 1.
+
+5. **Deploy:**
+   - Click "Deploy"
+   - Wait for deployment (2-3 minutes)
+   - Your frontend will be live at: `https://cipherstudio-frontend.vercel.app`
 
 ---
 
-## Frontend Deployment
+## Part 3: Update Backend CORS
 
-### Vercel (Recommended)
+Now that you have your frontend URL, update the backend:
 
-#### Step 1: Install Vercel CLI
-```bash
-npm install -g vercel
-```
+1. **Go to Vercel Dashboard → Backend Project**
+2. **Settings → Environment Variables**
+3. **Update `CORS_ORIGIN`:**
+   ```
+   CORS_ORIGIN=https://cipherstudio-frontend.vercel.app
+   ```
+   (Use your actual frontend URL)
 
-#### Step 2: Deploy from Frontend Directory
-```bash
-cd frontend
-vercel
-```
-
-Follow the prompts:
-- **Set up and deploy**: Yes
-- **Which scope**: Your account
-- **Link to existing project**: No
-- **Project name**: cipherstudio
-- **Directory**: `./`
-- **Override settings**: No
-
-#### Step 3: Set Environment Variables
-```bash
-vercel env add NEXT_PUBLIC_API_URL
-```
-Enter your backend URL: `https://cipherstudio-backend.onrender.com/api`
-
-For production:
-```bash
-vercel env add NEXT_PUBLIC_API_URL production
-```
-
-#### Step 4: Deploy to Production
-```bash
-vercel --prod
-```
-
-#### Alternative: Vercel Dashboard
-
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click **Import Project**
-3. Import from GitHub
-4. Select your repository
-5. Configure:
-   - **Framework Preset**: Next.js
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-6. Add environment variable:
-   - `NEXT_PUBLIC_API_URL`: Your backend URL
-7. Click **Deploy**
+4. **Redeploy Backend:**
+   - Go to "Deployments" tab
+   - Click "..." on the latest deployment
+   - Click "Redeploy"
 
 ---
 
-### Netlify (Alternative)
+## Part 4: Test Your Deployment
 
-#### Step 1: Create `netlify.toml`
-Create in `frontend` directory:
-```toml
-[build]
-  command = "npm run build"
-  publish = ".next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-```
-
-#### Step 2: Deploy
-```bash
-cd frontend
-npm install -g netlify-cli
-netlify login
-netlify init
-netlify deploy --prod
-```
-
-#### Step 3: Set Environment Variables
-In Netlify dashboard:
-- Go to **Site settings** → **Environment variables**
-- Add `NEXT_PUBLIC_API_URL`
+1. Visit your frontend URL: `https://cipherstudio-frontend.vercel.app`
+2. Register a new account
+3. Create a project
+4. Test the code editor
 
 ---
 
-## Environment Configuration
+## Alternative: Deploy Both in One Repository
 
-### Production Backend `.env`
-```env
-NODE_ENV=production
-PORT=5000
+If you prefer to keep everything in one repository:
 
-# MongoDB Atlas (Production)
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/cipherstudio?retryWrites=true&w=majority
+### Step 1: Create Monorepo Structure
 
-# Strong JWT Secret (generate new one)
-JWT_SECRET=use_crypto_randomBytes_64_hex_here
-
-# AWS S3
-AWS_ACCESS_KEY_ID=your_production_key
-AWS_SECRET_ACCESS_KEY=your_production_secret
-AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=cipherstudio-production
-
-# Frontend URL
-CORS_ORIGIN=https://cipherstudio.vercel.app
+```
+project1/
+├── backend/
+├── frontend/
+└── vercel.json
 ```
 
-### Production Frontend `.env.local`
-```env
-NEXT_PUBLIC_API_URL=https://cipherstudio-backend.onrender.com/api
-```
+### Step 2: Create Root `vercel.json`
 
----
-
-## Security Checklist
-
-### Before Deployment
-
-- [ ] Generate strong JWT secret
-- [ ] Update CORS_ORIGIN to production URL
-- [ ] Set NODE_ENV=production
-- [ ] Remove console.logs from production code
-- [ ] Enable MongoDB IP whitelist (or use 0.0.0.0/0 carefully)
-- [ ] Use environment variables for all secrets
-- [ ] Enable HTTPS (automatic on Vercel/Render)
-- [ ] Set up error monitoring (Sentry, LogRocket)
-- [ ] Configure rate limiting
-- [ ] Review S3 bucket permissions
-- [ ] Enable MongoDB Atlas backup
-
-### MongoDB Atlas Production Settings
-
-1. **Network Access**:
-   - Add your backend server IP
-   - Or use 0.0.0.0/0 (less secure but easier)
-
-2. **Database Access**:
-   - Create production-specific user
-   - Use strong password
-   - Limit to specific database
-
-3. **Backup**:
-   - Enable continuous backup
-   - Set retention period
-
-### AWS S3 Production Settings
-
-1. **Bucket Policy**:
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
+  "version": 2,
+  "builds": [
     {
-      "Effect": "Deny",
-      "Principal": "*",
-      "Action": "s3:*",
-      "Resource": [
-        "arn:aws:s3:::cipherstudio-production",
-        "arn:aws:s3:::cipherstudio-production/*"
-      ],
-      "Condition": {
-        "Bool": {
-          "aws:SecureTransport": "false"
-        }
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1"
     }
   ]
 }
 ```
 
-2. **Versioning**: Enable for file recovery
-3. **Encryption**: Enable default encryption
-4. **Lifecycle Rules**: Archive old files (optional)
+### Step 3: Update Frontend Build Command
+
+In `frontend/package.json`, add:
+```json
+{
+  "scripts": {
+    "vercel-build": "npm run build"
+  }
+}
+```
+
+### Step 4: Deploy
+
+1. Push entire project to GitHub
+2. Import to Vercel
+3. Add all environment variables
+4. Deploy
 
 ---
 
-## Post-Deployment
+## Environment Variables Summary
 
-### 1. Test Deployment
-
-#### Backend Health Check
-```bash
-curl https://your-backend-url.onrender.com
+### Backend Environment Variables:
+```
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+NODE_ENV=production
+CORS_ORIGIN=https://your-frontend-url.vercel.app
 ```
 
-Expected response:
-```json
-{
-  "message": "CipherStudio API is running"
-}
+### Frontend Environment Variables:
 ```
-
-#### Test Registration
-```bash
-curl -X POST https://your-backend-url.onrender.com/api/users/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "test123"
-  }'
-```
-
-#### Test Frontend
-1. Open your frontend URL
-2. Register a new account
-3. Create a project
-4. Edit code and save
-5. Verify changes persist
-
-### 2. Monitor Logs
-
-**Render**:
-- Go to your service dashboard
-- Click **Logs** tab
-- Monitor for errors
-
-**Vercel**:
-- Go to your project
-- Click **Deployments**
-- Click on deployment → **Functions** tab
-
-### 3. Set Up Custom Domain (Optional)
-
-#### Vercel
-1. Go to project settings
-2. Click **Domains**
-3. Add your domain
-4. Update DNS records as instructed
-
-#### Render
-1. Go to service settings
-2. Click **Custom Domains**
-3. Add domain
-4. Update DNS CNAME record
-
-### 4. Enable Analytics
-
-#### Vercel Analytics
-```bash
-npm install @vercel/analytics
-```
-
-In `_app.js`:
-```javascript
-import { Analytics } from '@vercel/analytics/react';
-
-export default function App({ Component, pageProps }) {
-  return (
-    <>
-      <Component {...pageProps} />
-      <Analytics />
-    </>
-  );
-}
-```
-
-### 5. Set Up Error Monitoring
-
-#### Sentry (Recommended)
-
-**Backend**:
-```bash
-npm install @sentry/node
-```
-
-In `server.js`:
-```javascript
-const Sentry = require('@sentry/node');
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-});
-```
-
-**Frontend**:
-```bash
-npm install @sentry/nextjs
-```
-
-Run:
-```bash
-npx @sentry/wizard -i nextjs
+VITE_API_URL=https://your-backend-url.vercel.app/api
 ```
 
 ---
 
 ## Troubleshooting
 
-### Backend Issues
+### Issue: CORS Error
+**Solution:** Make sure `CORS_ORIGIN` in backend matches your frontend URL exactly.
 
-**Problem**: 502 Bad Gateway
-- **Solution**: Check backend logs, verify environment variables
+### Issue: MongoDB Connection Failed
+**Solution:** Whitelist `0.0.0.0/0` in MongoDB Atlas Network Access.
 
-**Problem**: MongoDB connection timeout
-- **Solution**: Check MongoDB Atlas IP whitelist
+### Issue: 404 on API Routes
+**Solution:** Check that your backend `vercel.json` routes are correct.
 
-**Problem**: S3 Access Denied
-- **Solution**: Verify AWS credentials and IAM permissions
+### Issue: Environment Variables Not Working
+**Solution:** 
+- Make sure variables are added in Vercel dashboard
+- Redeploy after adding variables
+- For Vite, variables must start with `VITE_`
 
-### Frontend Issues
+---
 
-**Problem**: API calls failing
-- **Solution**: Check CORS settings in backend
+## Custom Domain (Optional)
 
-**Problem**: 404 on refresh
-- **Solution**: Configure rewrites in Vercel/Netlify
-
-**Problem**: Environment variables not working
-- **Solution**: Rebuild after adding variables
+1. Go to Vercel Dashboard → Your Project
+2. Click "Settings" → "Domains"
+3. Add your custom domain
+4. Update DNS records as instructed
+5. Update `CORS_ORIGIN` in backend to match new domain
 
 ---
 
 ## Continuous Deployment
 
-### GitHub Actions (Optional)
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Deploy to Render
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
-
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Deploy to Vercel
-        run: |
-          npm install -g vercel
-          cd frontend
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
-```
+Once set up, every push to your GitHub repository will automatically deploy:
+- Push to `main` branch → Automatic deployment
+- Pull requests → Preview deployments
 
 ---
 
-## Scaling Considerations
+## Cost
 
-### When to Scale
+- **Vercel Free Tier:**
+  - 100 GB bandwidth/month
+  - Unlimited projects
+  - Automatic HTTPS
+  - Perfect for this project!
 
-- Response time > 1 second
-- CPU usage > 80%
-- Memory usage > 80%
-- Error rate > 1%
-
-### How to Scale
-
-**Render**: Upgrade instance type
-**Railway**: Auto-scales based on usage
-**MongoDB**: Upgrade cluster tier
-**S3**: Automatically scales
+- **MongoDB Atlas Free Tier:**
+  - 512 MB storage
+  - Shared cluster
+  - Good for development/small projects
 
 ---
 
-## Backup Strategy
+## Next Steps
 
-### Database Backup
-- MongoDB Atlas: Automatic continuous backup
-- Manual export: `mongodump`
+1. ✅ Deploy backend
+2. ✅ Deploy frontend
+3. ✅ Update CORS settings
+4. ✅ Test the application
+5. 🎉 Share your live app!
 
-### S3 Backup
-- Enable versioning
-- Set up cross-region replication (optional)
-
-### Code Backup
-- Git repository (GitHub)
-- Regular commits and tags
-
----
-
-## Cost Estimation
-
-### Free Tier (Development)
-- **Render**: Free tier (sleeps after inactivity)
-- **Vercel**: Free tier (hobby)
-- **MongoDB Atlas**: M0 Free tier (512MB)
-- **AWS S3**: Free tier (5GB, 12 months)
-
-**Total**: $0/month
-
-### Production (Low Traffic)
-- **Render**: $7/month (Starter)
-- **Vercel**: $20/month (Pro)
-- **MongoDB Atlas**: $9/month (M2)
-- **AWS S3**: ~$1-5/month
-
-**Total**: ~$37-41/month
-
-### Production (High Traffic)
-- **Render**: $25-85/month
-- **Vercel**: $20-150/month
-- **MongoDB Atlas**: $57+/month
-- **AWS S3**: $10-50/month
-
-**Total**: ~$112-342/month
-
----
-
-## Support
-
-For deployment issues:
-- Check service status pages
-- Review documentation
-- Contact support teams
-- Check community forums
-
----
-
-**Congratulations! Your CipherStudio is now live! 🚀**
+Your CipherStudio IDE will be live and accessible worldwide!

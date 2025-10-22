@@ -20,19 +20,23 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // Routes
 app.get('/', (req, res) => {
   res.json({ message: 'CipherStudio API is running' });
 });
 
+// Log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// Routes
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/files', fileRoutes);
 
 // Error handling
-app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
