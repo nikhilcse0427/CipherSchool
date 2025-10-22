@@ -11,6 +11,12 @@ export default ({ mode }) => {
       port: 3000,
       open: true,
       strictPort: true,
+      hmr: {
+        overlay: true,
+      },
+      watch: {
+        usePolling: true,
+      },
     },
     // Use absolute base URL for production
     base: mode === 'production' ? '/' : '/',

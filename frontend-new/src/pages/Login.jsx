@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Code2 } from 'lucide-react';
 import { authAPI } from '../lib/api';
 import { setAuthToken, setUser } from '../lib/auth';
@@ -27,12 +27,50 @@ export default function Login() {
     setError('');
 
     try {
+      console.log('Sending login request with data:', formData);
       const response = await authAPI.login(formData);
-      setAuthToken(response.data.token);
-      setUser(response.data.user);
-      navigate('/dashboard');
+      console.log('Login response:', response);
+      
+      // Validate response data
+      if (!response || !response.data) {
+        console.error('No response data from server');
+        throw new Error('No response data from server');
+      }
+      
+      const { _id, username, email, token, fullName } = response.data;
+      
+      if (!token) {
+        console.error('No token in response:', response.data);
+        throw new Error('No authentication token received');
+      }
+      
+      // Format user data
+      const userData = {
+        id: _id,
+        name: fullName || username || email.split('@')[0],
+        email: email,
+        username: username,
+        fullName: fullName,
+        token: token
+      };
+      
+      console.log('Setting user data:', userData);
+      
+      // Set auth token and user data
+      setAuthToken(token);
+      setUser(userData);
+      
+      // Redirect to dashboard or previous location
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+      
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || 
+                         (err.message === 'Invalid response from server' 
+                          ? 'Invalid response from server. Please try again.' 
+                          : 'Login failed. Please check your credentials and try again.');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

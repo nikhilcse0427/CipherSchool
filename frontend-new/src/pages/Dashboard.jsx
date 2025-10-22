@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Code2, Plus, Folder, Clock, LogOut, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Code2, Plus, Folder, Clock, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { projectAPI } from '../lib/api';
-import { getUser, removeAuthToken } from '../lib/auth';
+import { getUser, removeAuthToken, isAuthenticated } from '../lib/auth';
+import { toast } from 'react-toastify';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -13,9 +14,90 @@ export default function Dashboard() {
   const [newProjectName, setNewProjectName] = useState('');
   const [creating, setCreating] = useState(false);
 
+  const location = useLocation();
+  const [initialized, setInitialized] = useState(false);
+
+  // Function to handle authentication and redirect if needed
+  const checkAuthAndRedirect = useCallback(() => {
+    if (!isAuthenticated()) {
+      console.log('No auth token found, redirecting to login');
+      navigate('/login', { state: { from: location }, replace: true });
+      return false;
+    }
+    return true;
+  }, [location, navigate]);
+
+  // Function to load user data
+  const loadUserData = useCallback(() => {
+    const userData = getUser();
+    if (!userData) {
+      console.warn('No valid user data found in storage');
+      removeAuthToken();
+      navigate('/login', { state: { from: location }, replace: true });
+      return null;
+    }
+    return userData;
+  }, [location, navigate]);
+
+  // Initialize auth and load data
   useEffect(() => {
-    setUser(getUser());
-    fetchProjects();
+    let isMounted = true;
+
+    const initialize = async () => {
+      try {
+        // Check authentication
+        if (!checkAuthAndRedirect()) {
+          return;
+        }
+
+        // Load user data
+        const userData = loadUserData();
+        if (!userData) return;
+
+        // Set user state
+        if (isMounted) {
+          setUser(userData);
+          
+          // Show welcome message if coming from login
+          if (location.state?.from?.pathname === '/login') {
+            toast.success(`Welcome back, ${userData.name || 'User'}!`);
+          }
+          
+          // Load projects
+          await fetchProjects();
+        }
+      } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        toast.error('Failed to load dashboard. Please try again.');
+        removeAuthToken();
+        navigate('/login', { state: { from: location }, replace: true });
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setInitialized(true);
+        }
+      }
+    };
+
+    initialize();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [checkAuthAndRedirect, loadUserData, location, navigate]);
+
+  // Handle window focus to refresh data
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated()) {
+        fetchProjects().catch(console.error);
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchProjects = async () => {
@@ -72,17 +154,25 @@ export default function Dashboard() {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
     });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
+        <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <p className="mt-4 text-gray-600">You are not logged in. Please log in to access your dashboard.</p>
+        <Link to="/login" className="mt-4 text-blue-500 hover:text-blue-700">
+          Log in
+        </Link>
       </div>
     );
   }

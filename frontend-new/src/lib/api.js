@@ -7,7 +7,9 @@ const isProduction = import.meta.env.PROD;
 const getApiUrl = () => {
   // In production, use VITE_API_URL environment variable
   if (isProduction) {
-    return import.meta.env.VITE_API_URL || 'https://your-backend-deployment-url.vercel.app';
+    // Remove any trailing slashes and add /api
+    const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    return baseUrl.replace(/\/+$/, '');
   }
   // In development, use localhost
   return 'http://localhost:5000';
